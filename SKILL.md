@@ -48,7 +48,7 @@ description: GitHub のブランチ・タグごとに、そのコミットに固
 3. **設定キー**（キー名・既定値・必須か・説明）と、そのうち秘匿値（パスワード・トークン）はどれか。アプリが設定をどう読むか（`. "$CONF_FILE"`、systemd の `EnvironmentFile=` など）。
 4. **導入物と削除範囲**。取得先（`$DIR`）の外に置くもの（サービス定義・コマンドへのリンク・ユーザーなど）と、`uninstall` で消すもの・`--purge` のときだけ消すものの線引き。
 5. **頒布前の検査**。そのプロジェクトのテスト・lint のうち、通らなければ `install.sh` を出すべきでないもの。
-6. **依存**。`install.sh` が自分で入れるのは git と ca-certificates だけ（system 方式かつ apt-get がある場合）。アプリの依存は `app_install` で入れる。user 方式では昇格できないので、不足を知らせて止める。
+6. **依存**。`install.sh` が自分で入れるのは git と ca-certificates だけ（system 方式で、apt-get か apk がある場合）。アプリの依存は `app_install` で入れる。user 方式では昇格できないので、不足を知らせて止める。
 
 ## 作業手順
 

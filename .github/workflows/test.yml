@@ -29,3 +29,18 @@ jobs:
         run: |
           sh tests/e2e.sh user sub
           sudo sh tests/e2e.sh system sub
+
+  e2e-alpine:
+    # busybox の sh・coreutils でもコアが動くことを確かめる（system 方式）
+    runs-on: ubuntu-latest
+    container: alpine:3.22
+    steps:
+      - name: 依存の導入
+        run: apk add --no-cache -q git ca-certificates
+
+      - uses: actions/checkout@v7
+
+      - name: E2E（system 方式）
+        run: |
+          sh tests/e2e.sh system
+          sh tests/e2e.sh system sub

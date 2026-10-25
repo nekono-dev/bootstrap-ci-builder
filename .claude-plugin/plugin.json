@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
   "name": "bootstrap-ci-builder",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "ブランチ・タグごとにコミット固定の install.sh（curl | sh）を GitHub Actions で生成・頒布し、「アプリ名-ctl」で update・--ref による切り替え・uninstall を行う仕組みをリポジトリへ整備するスキル。",
   "author": { "name": "nekono-dev" },
   "repository": "https://github.com/nekono-dev/bootstrap-ci-builder",

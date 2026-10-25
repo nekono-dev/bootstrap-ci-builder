@@ -106,6 +106,7 @@ KEY|既定値|required または optional|説明
   curl -fsSL https://github.com/<owner>/<repo>/releases/latest/download/install.sh | sudo sh -s -- install --set KEY=VALUE
   ```
 - 版を固定した導入: `…/releases/download/<タグ>/install.sh`
+- curl の無い環境（Alpine など）では `wget -qO- <URL> | sh -s -- install` で取得できる
 - ブランチの導入・切り替え: `install --ref <ブランチ名>`、導入後は `<アプリ名>-ctl update --ref <名前>`
 - 更新・状態・一覧・削除: `<アプリ名>-ctl update` / `status` / `refs` / `uninstall [--purge]`
 - 設定ファイルの場所と、キーの一覧（`config.schema` の内容）。手編集した後の反映方法（サービスの再起動など、アプリ次第）

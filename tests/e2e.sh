@@ -38,6 +38,7 @@ else
   DATA_DIR="/var/lib/$APP"; BIN_DIR=/usr/local/bin
 fi
 export E2EAPP_BCB_DIR="$WORK/install"
+export WORK_MARK="$WORK/purged"
 DIR=$E2EAPP_BCB_DIR
 CONF="$CONF_DIR/$APP.env"
 STATE="$STATE_DIR/state"
@@ -78,6 +79,10 @@ EOF
 cat > "$SRC/installer/app.sh" <<'EOF'
 # shellcheck shell=sh disable=SC2154
 
+app_check() {
+  [ "$(config_value OPT)" != bad ] || die "OPT に bad は使えません"
+}
+
 app_install() {
   [ -z "${E2E_HOOK_FAIL:-}" ] || die "フックを失敗させる"
   # shellcheck source=/dev/null
@@ -94,6 +99,7 @@ app_install() {
 
 app_uninstall() {
   rm -f "$BIN_DIR/$APP-hello"
+  [ -z "$PURGE" ] || : > "$WORK_MARK"
 }
 
 app_purge() {
@@ -154,6 +160,9 @@ check "--set と環境変数の両方を指定できる" env OPT=env sh "$I1" in
 check "--set が環境変数より優先される" test "$(conf_val OPT)" = set
 check_not "未宣言キーの --set は失敗する" sh "$I1" install --set NOPE=x
 check_not "' を含む値の --set は失敗する" sh "$I1" install --set "REQ=a'b"
+check_not "app_check が拒否する値の --set は失敗する" sh "$I1" install --set OPT=bad
+check "app_check が拒否した値は設定ファイルに書かれない" test "$(conf_val OPT)" = set
+check_not "app_check は環境変数の値も検査する" env OPT=bad sh "$I1" install
 
 echo "--- update"
 printf 'NEWKEY|nv|optional|追加した値\n' >> "$SRC/installer/config.schema"
@@ -197,7 +206,9 @@ check "取得先・常設コマンド・アプリの導入物が消える" sh -c
 check "設定とデータは残る" sh -c "test -f '$CONF' && test -d '$DATA_DIR'"
 check "残った設定で再 install できる（--set 不要）" sh "$I1" install
 check "再 install で設定が再利用される" test "$(conf_val REQ)" = a
+check_not "--purge なしの uninstall では、フックに PURGE が渡らない" test -e "$WORK/purged"
 check "install.sh 経由で uninstall --purge できる" sh "$I1" uninstall --purge
+check "--purge のとき、フックに PURGE が渡る" test -e "$WORK/purged"
 check "--purge で設定・データ・導入メタ情報が消える" sh -c "! test -e '$CONF_DIR' && ! test -e '$DATA_DIR' && ! test -e '$STATE_DIR'"
 check_not "未導入での update は失敗する" sh "$I1" update
 

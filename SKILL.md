@@ -73,10 +73,13 @@ description: GitHub のブランチ・タグごとに、そのコミットに固
 | `$BIN_DIR` | 常設コマンドを置く場所（system: `/usr/local/bin`、user: `$HOME/.local/bin`）。`app_install` の時点で存在する |
 | `$INSTALL_MODE` | `system` か `user` |
 | `$SUB` | `install` か `update` |
+| `$PURGE` | `uninstall --purge` のとき `1`、それ以外は空 |
+| `config_value KEY` | `app_check` の中で、そのキーに決まる値（`--set`・環境変数・設定ファイル・既定値の順）を返す |
 | `log` `warn` `die` | 表示・中止 |
 
+- `app_check`（任意）: 設定の検証の後、設定ファイルへ書き込む前に呼ばれる。アプリ固有の値の検査（数値の範囲、存在するベンダー名など）をここで `die` すれば、何も変更せずに止まる。値は `config_value KEY` で読む。
 - `app_install`: 設定の反映後、導入メタ情報と常設コマンドの配置より前に、`install`・`update` のたびに呼ばれる。失敗すると（`die` や `set -e` で止まると）導入メタ情報と常設コマンドは更新されず、設定ファイルだけが反映済みで残る。**何度実行しても同じ結果になる**ように書く。`update` では新しい版の `app.sh` で呼ばれるので、配置物は毎回上書きし、サービスなら再読み込み・再起動まで行う。
-- `app_uninstall`: `uninstall` の最初に呼ばれる。`$DIR` の外に置いた導入物（サービスの停止と定義の削除、リンクなど）を片付ける。**存在しない物があっても失敗しない**こと。
+- `app_uninstall`: `uninstall` の最初に呼ばれる。削除の範囲が `--purge` で変わる処理（コンテナのボリュームなど）は `$PURGE` で分ける。`$DIR` の外に置いた導入物（サービスの停止と定義の削除、リンクなど）を片付ける。**存在しない物があっても失敗しない**こと。
 - `app_purge`: `--purge` のときだけ `app_uninstall` の後に呼ばれる。設定・データ・導入メタ情報はコアが消すので、それ以外（作ったユーザーなど）だけを消す。
 
 `CTL_SUBCOMMAND` を指定したときは、コアは常設コマンドを置かない。代わりに `app_install` が `$BIN_DIR/<CTL_NAME>` を置き、そのコマンドは `<CTL_NAME> <CTL_SUBCOMMAND> <サブコマンド> [引数…]` を受けたら `sh "$DIR/installer/main.sh" <サブコマンド> [引数…]` を実行する。置かれていなければ `install` は失敗する。

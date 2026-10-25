@@ -1,0 +1,2 @@
+GREETING|hello|optional|応答する挨拶
+PORT|8000|optional|待ち受けポート

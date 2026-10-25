@@ -1,0 +1,9 @@
+schema_version: "1.1"
+name: adds-installer-for-systemd-service
+expected_outcome: |
+  installer/ にインストーラ一式と .github/workflows/release-installer.yml を作り、tinyapi を root（system 方式）で導入する。
+  設定キーは PORT（既定 8080、optional）と API_TOKEN（required）。フックは systemd の unit を配置・再読み込み・有効化・再起動し、
+  uninstall で停止・削除する。ci.yml と同じ検査（py_compile）が install.sh の生成前に通る。生成した install.sh が構文検査を通る。
+  README に導入コマンドと、トークンを --set ではなく環境変数か設定ファイルで渡す旨が書かれる。
+context:
+  scaffold_script: place-files.sh

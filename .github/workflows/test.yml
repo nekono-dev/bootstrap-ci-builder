@@ -1,0 +1,26 @@
+# 責務: スキルが配るインストーラのコア（assets/core）を、system 方式・user 方式の両方で実際に動かして検査する。
+name: test
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: シェルの検査（構文・shellcheck）
+        run: |
+          for f in assets/core/installer/*.sh scripts/*.sh tests/*.sh; do sh -n "$f"; done
+          shellcheck -S warning assets/core/installer/*.sh assets/app/installer/app.sh scripts/*.sh tests/*.sh
+
+      - name: E2E（user 方式）
+        run: sh tests/e2e.sh user
+
+      - name: E2E（system 方式）
+        run: sudo sh tests/e2e.sh system

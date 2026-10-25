@@ -1,0 +1,6 @@
+[Unit]
+Description=notes-sync
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/notes-sync

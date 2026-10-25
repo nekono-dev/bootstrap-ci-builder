@@ -1,0 +1,8 @@
+schema_version: "1.1"
+name: adds-user-mode-installer
+expected_outcome: |
+  一般ユーザー（user 方式・sudo 不要）で導入するインストーラ一式と release-installer.yml を作る。設定キーは SYNC_DIR・SYNC_REMOTE（どちらも required）。
+  フックは notes-sync を ~/.local/bin から使えるようにし、systemd --user の unit を配置して daemon-reload・timer を有効化する。
+  uninstall で timer を止めて unit とコマンドを消す。root での実行を拒む。生成した install.sh が構文検査を通る。
+context:
+  scaffold_script: place-files.sh

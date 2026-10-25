@@ -1,0 +1,8 @@
+schema_version: "1.1"
+name: migrates-legacy-installer
+expected_outcome: |
+  旧形式（main.sh にアプリ名とフックが直接書かれた形）を、アプリ名・導入方式を installer/app.conf（APP_NAME=hello-svc、system）、
+  フックを installer/app.sh に移した形にする。フックの中身（python3 の導入、hello-svc ユーザー、unit の配置・再起動、uninstall の停止・削除、purge の userdel）は保たれる。
+  config.schema の GREETING・PORT は変わらない。Python の構文検査は installer-check.yml へ移る。生成した install.sh が構文検査を通る。
+context:
+  scaffold_script: place-files.sh

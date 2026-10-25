@@ -1,0 +1,9 @@
+#!/bin/sh
+set -eu
+: "${SYNC_DIR:?SYNC_DIR が必要です}"
+: "${SYNC_REMOTE:?SYNC_REMOTE が必要です}"
+cd "$SYNC_DIR"
+git pull -q --rebase "$SYNC_REMOTE" main
+git add -A
+git commit -qm "sync $(date -u +%FT%TZ)" || true
+git push -q "$SYNC_REMOTE" HEAD:main

@@ -8,6 +8,7 @@ REPO_URL='@@REPO_URL@@'
 APP_NAME='@@APP_NAME@@'
 INSTALL_MODE='@@INSTALL_MODE@@'
 CTL_NAME='@@CTL_NAME@@'
+CTL_SUBCOMMAND='@@CTL_SUBCOMMAND@@'
 DIR_ENV='@@DIR_ENV@@'
 
 log() { printf '==> %s\n' "$*"; }
@@ -62,7 +63,9 @@ case "$DIR" in
 esac
 
 if [ "$SUB" = "uninstall" ] || [ "$SUB" = "update" ]; then
-  if [ -x "$CTL" ]; then
+  if [ -x "$CTL" ] && [ -n "$CTL_SUBCOMMAND" ]; then
+    exec "$CTL" "$CTL_SUBCOMMAND" "$SUB" "$@"
+  elif [ -x "$CTL" ]; then
     exec "$CTL" "$SUB" "$@"
   fi
   [ -f "$DIR/installer/main.sh" ] || die "導入されていません（$CTL も $DIR/installer/main.sh も見つかりません）"

@@ -24,3 +24,8 @@ jobs:
 
       - name: E2E（system 方式）
         run: sudo sh tests/e2e.sh system
+
+      - name: E2E（常設コマンドをアプリのサブコマンドにする形）
+        run: |
+          sh tests/e2e.sh user sub
+          sudo sh tests/e2e.sh system sub

@@ -19,8 +19,8 @@
 |---|---|
 | `install [--ref 名前] [--set KEY=VALUE …]` | 導入する。再実行しても同じ結果になる。`--ref` なしは `install.sh` に埋め込まれた REF・コミット、`--ref` ありはそのブランチ・タグの先頭 |
 | `update [--ref 名前] [--set KEY=VALUE …]` | 導入中の REF の最新を取得し、新しい版の `main.sh` で再適用する。`--ref` で切り替えると、以後は切り替え先に追従する。`install.sh` 経由でも `<アプリ名>-ctl` 経由でも同じ（`install.sh` は導入済みの常設コマンドへ委譲し、埋め込みコミットへは戻さない） |
-| `refs` | 取得元のブランチ・タグを `種別<TAB>名前` で表示する（`<アプリ名>-ctl` のみ） |
-| `status` | 導入先・導入方式・参照・コミット・取得元・更新日時・設定ファイルを表示する（`<アプリ名>-ctl` のみ） |
+| `refs` | 取得元のブランチ・タグを `種別<TAB>名前` で表示する（常設コマンドのみ） |
+| `status` | 導入先・導入方式・参照・コミット・取得元・更新日時・設定ファイルを表示する（常設コマンドのみ） |
 | `uninstall` | `app_uninstall` の対象・常設コマンド・取得先を削除する。設定・データ・導入メタ情報は残す（再導入でそのまま使われる） |
 | `uninstall --purge` | 上記に加え、設定・データ・導入メタ情報・`app_purge` の対象も削除する |
 
@@ -71,9 +71,10 @@ INSTALL_MODE='system'
 | `APP_NAME` | ○ | 英小文字・数字・`-`、英小文字始まり |
 | `INSTALL_MODE` | | `system`（既定）か `user` |
 | `CTL_NAME` | | 常設コマンド名。既定は `<APP_NAME>-ctl`。アプリ自身のコマンド名とぶつかるときに変える |
+| `CTL_SUBCOMMAND` | | 指定すると、`CTL_NAME` はアプリ自身のコマンドになり（`app_install` が置く）、更新・削除は `<CTL_NAME> <CTL_SUBCOMMAND> update` の形で呼ぶ。install.sh の `update`・`uninstall` もこの形で委譲する |
 | `DATA_DIR` | | データディレクトリの絶対パス。`$HOME` を使ってよい（`main.sh` が実行時に評価する） |
 
-`APP_NAME`・`INSTALL_MODE`・`CTL_NAME` は CI でも読むので、`KEY='値'` か `KEY=値` の形で、変数や式を使わずに書く。
+`APP_NAME`・`INSTALL_MODE`・`CTL_NAME`・`CTL_SUBCOMMAND` は CI でも読むので、`KEY='値'` か `KEY=値` の形で、変数や式を使わずに書く。
 
 ## `config.schema` の書式
 

@@ -65,6 +65,8 @@ jobs:
         run: |
           mode=$(sed -n "s/^INSTALL_MODE='\(.*\)'\$/\1/p" dist/install.sh)
           ctl=$(sed -n "s/^CTL_NAME='\(.*\)'\$/\1/p" dist/install.sh)
+          ctl_sub=$(sed -n "s/^CTL_SUBCOMMAND='\(.*\)'\$/\1/p" dist/install.sh)
+          [ -z "$ctl_sub" ] || ctl="$ctl $ctl_sub"
           sudo=''
           [ "$mode" = system ] && sudo='sudo '
           {

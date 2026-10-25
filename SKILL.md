@@ -30,7 +30,7 @@ description: GitHub のブランチ・タグごとに、そのコミットに固
 | | `installer/build-bootstrap.sh` | ひな形へ REF・COMMIT・REPO_URL と `app.conf` の値を埋め込み、`install.sh` を標準出力へ出す |
 | | `installer/main.sh` | 本体。サブコマンド・設定・導入メタ情報・常設コマンド |
 | | `.github/workflows/release-installer.yml` | 検査・生成・artifact 保存・Release 添付 |
-| アプリ側（プロジェクトが書く） | `installer/app.conf` | `APP_NAME`・`INSTALL_MODE`（`system`/`user`）、任意で `CTL_NAME`・`DATA_DIR` |
+| アプリ側（プロジェクトが書く） | `installer/app.conf` | `APP_NAME`・`INSTALL_MODE`（`system`/`user`）、任意で `CTL_NAME`・`CTL_SUBCOMMAND`・`DATA_DIR` |
 | | `installer/app.sh` | フック `app_install`・`app_uninstall`・`app_purge` |
 | | `installer/config.schema` | 設定キーの宣言。設定が無ければ空でよい |
 | | `.github/workflows/installer-check.yml` | 頒布の前に通すプロジェクト固有の検査（`workflow_call`） |
@@ -43,7 +43,7 @@ description: GitHub のブランチ・タグごとに、そのコミットに固
 
 推測で進めず、次のうち分からないものは実装の前にユーザーへ確認する。
 
-1. **アプリ名**（`APP_NAME`。英小文字・数字・`-`）。取得先 `/opt/<アプリ名>`・設定 `/etc/<アプリ名>/<アプリ名>.env`・常設コマンド `<アプリ名>-ctl` などの名前になる。アプリ自身のコマンド名と常設コマンド名がぶつかるなら `CTL_NAME` を決める。
+1. **アプリ名**（`APP_NAME`。英小文字・数字・`-`）。取得先 `/opt/<アプリ名>`・設定 `/etc/<アプリ名>/<アプリ名>.env`・常設コマンド `<アプリ名>-ctl` などの名前になる。アプリ自身のコマンド名と常設コマンド名がぶつかるなら `CTL_NAME` を決める。アプリが自前のコマンドを持ち、そのサブコマンド（例 `<アプリ名> self update`）で更新・削除させたいなら `CTL_SUBCOMMAND` を使う（下記「フックの契約」）。
 2. **導入方式**（`INSTALL_MODE`）。`system` は root で `/opt`・`/etc`・`/var/lib`・`/usr/local/bin` へ、`user` は sudo なしで `$HOME` 配下へ導入する。
 3. **設定キー**（キー名・既定値・必須か・説明）と、そのうち秘匿値（パスワード・トークン）はどれか。アプリが設定をどう読むか（`. "$CONF_FILE"`、systemd の `EnvironmentFile=` など）。
 4. **導入物と削除範囲**。取得先（`$DIR`）の外に置くもの（サービス定義・コマンドへのリンク・ユーザーなど）と、`uninstall` で消すもの・`--purge` のときだけ消すものの線引き。
@@ -78,6 +78,8 @@ description: GitHub のブランチ・タグごとに、そのコミットに固
 - `app_install`: 設定の反映後、導入メタ情報と常設コマンドの配置より前に、`install`・`update` のたびに呼ばれる。失敗すると（`die` や `set -e` で止まると）導入メタ情報と常設コマンドは更新されず、設定ファイルだけが反映済みで残る。**何度実行しても同じ結果になる**ように書く。`update` では新しい版の `app.sh` で呼ばれるので、配置物は毎回上書きし、サービスなら再読み込み・再起動まで行う。
 - `app_uninstall`: `uninstall` の最初に呼ばれる。`$DIR` の外に置いた導入物（サービスの停止と定義の削除、リンクなど）を片付ける。**存在しない物があっても失敗しない**こと。
 - `app_purge`: `--purge` のときだけ `app_uninstall` の後に呼ばれる。設定・データ・導入メタ情報はコアが消すので、それ以外（作ったユーザーなど）だけを消す。
+
+`CTL_SUBCOMMAND` を指定したときは、コアは常設コマンドを置かない。代わりに `app_install` が `$BIN_DIR/<CTL_NAME>` を置き、そのコマンドは `<CTL_NAME> <CTL_SUBCOMMAND> <サブコマンド> [引数…]` を受けたら `sh "$DIR/installer/main.sh" <サブコマンド> [引数…]` を実行する。置かれていなければ `install` は失敗する。
 
 フックが長くなるなら、`installer/` の下に別ファイルを置いて `app.sh` から読み込んでよい。
 

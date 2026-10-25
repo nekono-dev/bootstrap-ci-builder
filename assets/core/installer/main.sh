@@ -13,6 +13,7 @@ die() { printf 'エラー: %s\n' "$*" 1>&2; exit 1; }
 APP_NAME=''
 INSTALL_MODE='system'
 CTL_NAME=''
+CTL_SUBCOMMAND=''
 DATA_DIR=''
 [ -f "$SCRIPT_DIR/app.conf" ] || die "アプリ定義がありません: $SCRIPT_DIR/app.conf"
 # shellcheck source=/dev/null
@@ -28,6 +29,8 @@ valid_name "$APP_NAME" || die "app.conf の APP_NAME が不正です（英小文
 APP=$APP_NAME
 [ -n "$CTL_NAME" ] || CTL_NAME="$APP-ctl"
 valid_name "$CTL_NAME" || die "app.conf の CTL_NAME が不正です: $CTL_NAME"
+[ -z "$CTL_SUBCOMMAND" ] || valid_name "$CTL_SUBCOMMAND" || die "app.conf の CTL_SUBCOMMAND が不正です: $CTL_SUBCOMMAND"
+CTL_CMD="$CTL_NAME${CTL_SUBCOMMAND:+ $CTL_SUBCOMMAND}"
 case "$INSTALL_MODE" in
   system)
     CONF_DIR="/etc/$APP"
@@ -54,7 +57,7 @@ CTL="$BIN_DIR/$CTL_NAME"
 
 usage() {
   cat <<EOF
-使い方: $CTL_NAME <update|uninstall|status|refs> [オプション]
+使い方: $CTL_CMD <update|uninstall|status|refs> [オプション]
   update    [--ref NAME] [--set KEY=VALUE ...]   導入中のブランチ・タグの最新へ更新する。--ref で別のブランチ・タグへ切り替える
   uninstall [--purge]                            アプリ本体を削除する。--purge で設定・データ・導入メタ情報も削除する
   status                                         導入情報を表示する
@@ -172,9 +175,13 @@ write_state() {
 }
 
 install_ctl() {
-  mkdir -p "$BIN_DIR"
-  (umask 022; printf '#!/bin/sh\nexec sh '"'"'%s'"'"' "$@"\n' "$SCRIPT_DIR/main.sh" > "$CTL")
-  chmod 755 "$CTL"
+  if [ -n "$CTL_SUBCOMMAND" ]; then
+    [ -x "$CTL" ] || die "app_install が $CTL を置いていません（CTL_SUBCOMMAND を指定したときは、アプリが '$CTL_CMD' を提供します）"
+  else
+    mkdir -p "$BIN_DIR"
+    (umask 022; printf '#!/bin/sh\nexec sh '"'"'%s'"'"' "$@"\n' "$SCRIPT_DIR/main.sh" > "$CTL")
+    chmod 755 "$CTL"
+  fi
   case ":${PATH:-}:" in
     *":$BIN_DIR:"*) ;;
     *) warn "$BIN_DIR が PATH にありません（$CTL をフルパスで実行してください）" ;;
@@ -220,7 +227,7 @@ resolve_ref() {
     die "ブランチとタグの両方に $_name があります。refs/heads/$_name か refs/tags/$_name で指定してください"
   elif [ -n "$_b" ]; then RESOLVED="refs/heads/$_name"
   elif [ -n "$_t" ]; then RESOLVED="refs/tags/$_name"
-  else die "取得元にブランチもタグも存在しません: $_name（'$CTL_NAME refs' で一覧を表示できます）"
+  else die "取得元にブランチもタグも存在しません: $_name（'$CTL_CMD refs' で一覧を表示できます）"
   fi
 }
 
